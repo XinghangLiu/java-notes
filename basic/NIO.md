@@ -172,7 +172,7 @@ public class IOServer {
 
 NIO中的N可以理解为Non-blocking，不单纯是New。它支持面向缓冲的，基于通道的I/O操作方法。 NIO提供了与传统BIO模型中的 `Socket` 和 `ServerSocket` 相对应的 `SocketChannel` 和 `ServerSocketChannel` 两种不同的套接字通道实现,两种通道都支持阻塞和非阻塞两种模式。阻塞模式使用就像传统中的支持一样，比较简单，但是性能和可靠性都不好；非阻塞模式正好与之相反。对于低负载、低并发的应用程序，可以使用同步阻塞I/O来提升开发速率和更好的维护性；对于高负载、高并发的（网络）应用，应使用 NIO 的非阻塞模式来开发。
 
-## **各自应用场景** 
+## 各自应用场景 
 
 （1）NIO 适合处理连接数目特别多，但是连接比较短（轻操作）的场景，Jetty，Mina，ZooKeeper 等都是基于 java nio 实现。服务器需要支持超大量的长时间连接。比如 10000 个连接以上，并且每个客户端并不会频繁地发送太多数据。
 
@@ -213,7 +213,7 @@ NIO 包含下面几个核心的组件：
 
 发送给一个通道的所有数据都必须首先放到缓冲区中，同样地，从通道中读取的任何数据都要先读到缓冲区中。也就是说，不会直接对通道进行读写数据，而是要先经过缓冲区。
 
-缓冲区实质上是一个数组，但它不仅仅是一个数组。缓冲区提供了对数据的结构化访问，而且还可以跟踪系统的读/写进程。
+缓冲区实质上是一个数组，但它不仅仅是一个**数组**。缓冲区提供了对数据的结构化访问，而且还可以跟踪系统的读/写进程。
 
 缓冲区包括以下类型：
 
@@ -225,29 +225,6 @@ NIO 包含下面几个核心的组件：
 - FloatBuffer
 - DoubleBuffer
 
-**缓冲区状态变量**
-
-- capacity：最大容量；
-- position：当前已经读写的字节数；
-- limit：还可以读写的字节数。
-
-状态变量的改变过程举例：
-
-① 新建一个大小为 8 个字节的缓冲区，此时 position 为 0，而 limit = capacity = 8。capacity 变量不会改变，下面的讨论会忽略它。
-
-<div align="center"> <img src="pics/1bea398f-17a7-4f67-a90b-9e2d243eaa9a.png"/> </div><br>
-② 从输入通道中读取 5 个字节数据写入缓冲区中，此时 position 为 5，limit 保持不变。
-
-<div align="center"> <img src="pics/80804f52-8815-4096-b506-48eef3eed5c6.png"/> </div><br>
-③ 在将缓冲区的数据写到输出通道之前，需要先调用 flip() 方法，这个方法将 limit 设置为当前 position，并将 position 设置为 0。
-
-<div align="center"> <img src="pics/952e06bd-5a65-4cab-82e4-dd1536462f38.png"/> </div><br>
-④ 从缓冲区中取 4 个字节到输出缓冲中，此时 position 设为 4。
-
-<div align="center"> <img src="pics/b5bdcbe2-b958-4aef-9151-6ad963cb28b4.png"/> </div><br>
-⑤ 最后需要调用 clear() 方法来清空缓冲区，此时 position 和 limit 都被设置为最初位置。
-
-<div align="center"> <img src="pics/67bf5487-c45d-49b6-b9c0-a058d8c68902.png"/> </div><br>
 ### 选择器
 
 NIO 常常被叫做非阻塞 IO，主要是因为 NIO 在网络通信中的非阻塞特性被广泛使用。
@@ -256,7 +233,7 @@ NIO 常常被叫做非阻塞 IO，主要是因为 NIO 在网络通信中的非�
 
 通过配置监听的通道 Channel 为非阻塞，那么当 Channel 上的 IO 事件还未到达时，就不会进入阻塞状态一直等待，而是继续轮询其它 Channel，找到 IO 事件已经到达的 Channel 执行。
 
-因为创建和切换线程的开销很大，因此使用一个线程来处理多个事件而不是一个线程处理一个事件，对于 IO 密集型的应用具有很好地性能。
+因为创建和切换线程的开销很大，因此使用一个线程来处理多个事件而不是一个线程处理一个事件，对于 IO 密集型的应用具有很好地性能（）。
 
 应该注意的是，只有套接字 Channel 才能配置为非阻塞，而 FileChannel 不能，为 FileChannel 配置非阻塞也没有意义。
 
@@ -361,7 +338,6 @@ while (true) {
 　　也可以理解为一个Handler，这个Handler只负责创建具体处理IO请求的Handler，如果Reactor广播时SelectionKey创建一个Handler负责绑定相应的SocketChannel到Selector中。下次再次有IO事件时会调用对用的Handler去处理。
 
 3. Handler
-4. 
 
 　　具体的事件处理者，例如ReadHandler、SendHandler，ReadHandler负责读取缓存中的数据，然后再调用一个工作处理线程去处理读取到的数据。具体为一个SocketChannel，Acceptor初始化该Handler时会将SocketChannel注册到Reactor的Selector中，同时将SelectionKey绑定该Handler，这样下次就会调用本Handler。
 
